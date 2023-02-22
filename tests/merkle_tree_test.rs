@@ -3,9 +3,9 @@ use rs_merkle::utils::indices::div_floor;
 
 mod common;
 
-pub fn calculate_root(proof: Vec<Vec<(usize, [u8; 32])>>) -> [u8; 32] {
-    let mut previous_layer = vec![];
-    for  layer in proof {
+pub fn calculate_root(leaves: Vec<(usize, [u8; 32])>, proof: Vec<Vec<(usize, [u8; 32])>>) -> [u8; 32] {
+    let mut previous_layer = leaves;
+    for layer in proof {
         let mut current_layer = vec![];
         if previous_layer.len() == 0 {
             current_layer = layer;
@@ -21,7 +21,7 @@ pub fn calculate_root(proof: Vec<Vec<(usize, [u8; 32])>>) -> [u8; 32] {
                 previous_layer.push((div_floor(node.0, 2), node.1));
             } else {
                 let mut concat = vec![];
-                let mut left = current_layer[index].clone();
+                let left = current_layer[index].clone();
                 let right = current_layer[index + 1].clone();
                 concat.extend(&left.1);
                 concat.extend(&right.1);
@@ -32,7 +32,7 @@ pub fn calculate_root(proof: Vec<Vec<(usize, [u8; 32])>>) -> [u8; 32] {
         }
     }
 
-    debug_assert!(previous_layer.len(), 1);
+    debug_assert!(previous_layer.len() == 1);
 
     previous_layer[0].1
 }
@@ -233,10 +233,15 @@ pub mod root {
 
         let tree = MerkleTree::<Keccak256>::from_leaves(&leaf_hashes);
 
-        println!("\n\n{:?}\n\n", tree.root_hex());
+        println!("\n\n{:?}\n\n", tree.root_hex().unwrap());
 
-        let proof = tree.proof_2d(&[0, 2, 5, 9]);
-        let calculated = calculate_root(proof);
+        let proof_indices = &[0, 2, 5, 9];
+        let proof = tree.proof_2d(proof_indices);
+        let leaves = proof_indices.iter().fold(vec![], |mut acc, i| {
+            acc.push((*i, leaf_hashes[*i]));
+            acc
+        });
+        let calculated = calculate_root(leaves, proof);
 
         println!("\n\n{:?}\n\n", hex::encode(&calculated));
 
