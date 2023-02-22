@@ -35,7 +35,7 @@ pub fn combinations<T: Clone>(vec: Vec<T>) -> Vec<Vec<T>> {
 
 pub fn setup() -> TestData {
     let leaf_values = ["a", "b", "c", "d", "e", "f"];
-    let expected_root_hex = "1f7379539707bcaea00564168d1d4d626b09b73f8a2a365234c62d763f854da2";
+    let expected_root_hex = "a30ba95a1a5dc397fe45ea20105363b08d682b864a28f4940419a29349a28325";
     let leaf_hashes = leaf_values
         .iter()
         .map(|x| Sha256::hash(x.as_bytes()))
